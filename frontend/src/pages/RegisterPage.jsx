@@ -1,5 +1,7 @@
 import React, { useState } from "react";
 import css from "./RegisterPage.module.css";
+import { useNavigate } from "react-router-dom";
+import { registerUser } from "../apis/userApi";
 const RegisterPage = () => {
     const [userName, setUserName] = useState("");
     const [passWord, setPassWord] = useState("");
@@ -7,6 +9,9 @@ const RegisterPage = () => {
     const [errUserName, setErrUserName] = useState("");
     const [errPassWord, setErrPassWord] = useState("");
     const [errPassWordOk, setErrPassWordOk] = useState("");
+
+    const [registerState, setRegisterState] = useState("");
+    const navigate = useNavigate();
 
     const validateUsername = (value) => {
         if (!value) {
@@ -63,10 +68,38 @@ const RegisterPage = () => {
         validatePassWordCheck(value);
     };
 
+    //회원가입 버튼 클릭 시 1. 유효성 검사 2. 회원가입 api호출 3. 성공 시 로그인 페이지로 이동
     const register = async (e) => {
         e.preventDefault();
-        console.log("register");
+        console.log("회원가입", userName, passWord, passWordOk);
+        validateUsername(userName);
+        validatePassWord(passWord);
+        validatePassWordCheck(passWordOk, passWord);
+
+        if (errUserName || errPassWord || errPassWordOk || !userName || !passWord || !passWordOk) {
+            return;
+        }
+
+        try {
+            setRegisterState("등록중");
+
+            const response = await registerUser({
+                userName,
+                passWord,
+            });
+
+            console.log("회원가입 성공", response.data);
+
+            setRegisterState("등록완료");
+            navigate("/login");
+        } catch (error) {
+            setRegisterState("회원가입 실패");
+            if (errPassWord.response) {
+                console.log("오류 응답 데이터--", err.response.data);
+            }
+        }
     };
+
     return (
         <main className={css.registerpage}>
             <h2>회원가입 페이지</h2>
