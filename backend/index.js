@@ -172,28 +172,20 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 app.post("/postWrite", upload.single("files"), async (req, res) => {
-    try {
-        const { title, summary, content } = req.body;
-        const { token } = req.cookies;
-        if (!token) {
-            return res.status(401).json({ error: "로그인 필요" });
-        }
-        const userInfo = jwt.verify(token, secretKey);
+    console.log("폼 데이터:", req.body); // title, summary, content
+    console.log("파일 정보:", req.file); // 업로드된 단수 파일 정보
 
-        const postData = {
-            title,
-            summary,
-            content,
-            cover: req.file ? req.file.path : null, // 파일 경로 저장
-            author: userInfo.userName,
-        };
-
-        await postModel.create(postData);
-        console.log("포스트 등록 성공");
-
-        res.json({ message: "포스트 글쓰기 성공" });
-    } catch (error) {
-        console.log("에러", err);
-        return res.status(500).json({ error: "서버 에러" });
-    }
+    const postData = {
+        title: req.body.title,
+        summary: req.body.summary,
+        content: req.body.content,
+        file: req.files
+            ? {
+                  originalname: req.files.originalname,
+                  size: req.files.size,
+                  mimetype: req.files.mimetype,
+              }
+            : null,
+    };
+    res.json({ message: "포스트 글쓰기 성공" });
 });
