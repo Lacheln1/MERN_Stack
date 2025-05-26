@@ -1,11 +1,23 @@
 import React from "react";
 import css from "./RegisterPage.module.css";
 import { useState } from "react";
+
+import { useDispatch } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { loginUser } from "../apis/userApi";
+import { setUserInfo } from "../store/userSlice";
+import { useEffect } from "react";
 const LoginPage = () => {
     const [userName, setUserName] = useState("");
     const [passWord, setPassWord] = useState("");
     const [errUserName, setErrUserName] = useState("");
     const [errPassWord, setErrPassWord] = useState("");
+
+    const [loginStatus, setLoginStatus] = useState(""); //로그인 상태
+    const [redirect, setRedirect] = useState(false); //로그인 상태 메시지
+
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
 
     const validateUserName = (value) => {
         if (!value) {
@@ -46,8 +58,39 @@ const LoginPage = () => {
 
     const login = async (e) => {
         e.preventDefault();
-        console.log("로그인");
+        setLoginStatus("");
+        validateUserName(userName);
+        validatePassWord(passWord);
+        if (errPassWord || errUserName || !userName || !passWord) {
+            setLoginStatus("아이디와 패스워드를 확인하세요");
+            return;
+        }
+        try {
+            const userData = await loginUser({ userName, passWord });
+
+            if (userData) {
+                setLoginStatus("로그인 성공");
+                dispatch(setUserInfo(userData));
+
+                setTimeout(() => {
+                    setRedirect(true);
+                }, 500);
+            } else {
+                setLoginStatus("사용자가 없습니다");
+            }
+        } catch (error) {
+            console.error("로그인 오류----", error);
+            return;
+        } finally {
+            setLoginStatus(false);
+        }
     };
+
+    useEffect(() => {
+        if (redirect) {
+            navigate("/");
+        }
+    }, [redirect, navigate]);
     return (
         <main className={css.loginpage}>
             <h2>로그인 페이지</h2>
