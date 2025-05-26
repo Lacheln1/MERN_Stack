@@ -40,6 +40,15 @@ import jwt from "jsonwebtoken";
 const secretKey = process.env.JWT_SECRET;
 const tokenLife = process.env.JWT_EXPIRATION; // 토큰 유효시간
 
+//쿠키 옵션을 일관되게 유지하기 위한 상수 정의
+const cookieOptions = {
+    httpOnly: true,
+    maxAge: 1000 * 60 * 60, // 1시간
+    secure: process.env.NODE_ENV === "production", // https에서만 쿠키 전송
+    sameSite: "strict", //CSRF 방지
+    path: "/", //모든 경로에서 쿠키 접근 가능
+};
+
 // 회원가입 로직
 app.post("/register", async (req, res) => {
     try {
@@ -86,10 +95,8 @@ app.post("/login", async (req, res) => {
                 expiresIn: tokenLife,
             });
 
-            res.cookie("token", token, {
-                httpOnly: true,
-                maxAge: 1000 * 60 * 60,
-            }).json({
+            //쿠키에 토큰 저장
+            res.cookie("token", token, cookieOptions).json({
                 id: userDoc._id,
                 userName,
             });
@@ -116,8 +123,10 @@ app.get("/profile", (req, res) => {
 
 //로그아웃
 app.post("/logout", (req, res) => {
-    res.cookie("token", "", {
-        httpOnly: true,
-        maxAge: 0, //쿠키 만료
-    }).json({ message: "로그아웃 되었음" });
+    // 쿠키 옵션을 로그인과 일관되게 유지하되, maxAge만 0으로 설정
+    const logoutCookieOptions = {
+        ...cookieOptions,
+        maxAge: 0,
+    };
+    res.cookie("token", "", logoutCookieOptions).json({ message: "로그아웃 되었음" });
 });
