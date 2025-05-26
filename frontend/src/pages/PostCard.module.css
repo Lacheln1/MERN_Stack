@@ -1,0 +1,96 @@
+.postCard {
+    border-bottom: 1px dotted #e3e3e3;
+    cursor: pointer;
+    border-radius: 1rem;
+    overflow: hidden;
+    box-shadow: 0 0 5px rgba(0, 0, 0, 0.3);
+    transition: 0.3s;
+}
+.title {
+    padding: 1rem 1rem 0;
+    font-size: 1.2rem;
+    line-height: 2rem;
+    color: #666;
+    /* 줄바꿈 방지(텍스트가 한줄로 계속 이어짐) */
+    white-space: nowrap;
+    /* 텍스트가 overflow되는 경우 ... 로 표시됨 */
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.post_text {
+    padding: 0 1rem;
+    font-size: 0.75rem;
+}
+/* relative는 자기 자신은 움직이지 않지만 absolute 요소의 기준이 된다 */
+/* 비율 유지 박스를 만들고 그 안에 절대 위치 이미지를 넣어서 어떤 화면 크기에서도 이미지 비율과 위치가 안정적으로 유지됨 */
+/* 반응형 카드 썸네일에서 자주 사용됨 (ex: 인스타 블로그 카드, 유튜브 썸네일 등) */
+.post_img {
+    overflow: hidden;
+    position: relative;
+    padding-top: 50%;
+}
+
+.post_img img {
+    position: absolute;
+    /* 이미지가 img박스의 상단(0px)에서 시작되도록 설정 */
+    top: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: all 0.2s ease-in-out;
+}
+
+.postCard:hover {
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.5);
+}
+.postCard:hover img {
+    transform: scale(1.1);
+}
+
+.info {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    padding: 0 1rem;
+}
+
+.author {
+    color: dodgerblue;
+    font-weight: bold;
+    padding: 0.25rem 1rem 0.25rem 0;
+}
+.author:hover {
+    color: rgb(1, 75, 148);
+}
+
+.date {
+    color: #999;
+    margin-left: 0.5rem;
+}
+
+.dec {
+    padding: 0 1rem;
+    font-size: 0.8rem;
+    line-height: 1.25rem;
+    color: #000;
+    white-space: normal;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    height: 60px;
+    margin-bottom: 1rem;
+}
+
+.heart {
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+.heart.liked {
+    color: red;
+}
