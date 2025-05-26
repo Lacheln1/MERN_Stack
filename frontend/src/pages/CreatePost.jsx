@@ -5,7 +5,8 @@ import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useEffect } from "react";
 import QuillEditor from "../components/QuillEditor";
-import { type } from "./../../node_modules/eventemitter3/index.d";
+import { createPost } from "../apis/postApi";
+
 const CreatePost = () => {
     const navigate = useNavigate();
     const [title, setTitle] = useState("");
@@ -52,6 +53,7 @@ const CreatePost = () => {
         }
 
         try {
+            await createPost(data);
             console.log("등록 성공");
             setIsSubmitting(false);
             navigate("/");
