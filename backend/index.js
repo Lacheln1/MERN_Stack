@@ -40,6 +40,7 @@ import jwt from "jsonwebtoken";
 const secretKey = process.env.JWT_SECRET;
 const tokenLife = process.env.JWT_EXPIRATION; // 토큰 유효시간
 
+// 회원가입 로직
 app.post("/register", async (req, res) => {
     try {
         console.log("------", req.body);
@@ -63,5 +64,38 @@ app.post("/register", async (req, res) => {
     } catch (error) {
         console.log("에러", err);
         res.status(500).json({ error: "서버 에러" });
+    }
+});
+
+// 로그인 로직
+app.post("/login", async (req, res) => {
+    try {
+        const { userName, passWord } = req.body;
+        const userDoc = await userModel.findOne({ userName });
+        if (!userDoc) {
+            return res.status(401).json({ error: "없는 사용자 입니다" });
+        }
+
+        const passOk = bcrypt.compareSync(passWord, userDoc.passWord);
+        if (!passOk) {
+            return res.status(401).json({ error: "비밀번호가 틀렸습니다" });
+        } else {
+            const { _id, userName } = userDoc;
+            const payload = { id: _id, userName };
+            const token = jwt.sign(payload, secretKey, {
+                expiresIn: tokenLife,
+            });
+
+            res.cookie("token", token, {
+                httpOnly: true,
+                maxAge: 1000 * 60 * 60,
+            }).json({
+                id: userDoc._id,
+                userName,
+            });
+        }
+    } catch (error) {
+        console.error("로그인 오류:", error);
+        res.status(500).json({ error: "로그인 실패" });
     }
 });
