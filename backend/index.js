@@ -21,7 +21,7 @@ import cookieParser from "cookie-parser";
 app.use(cookieParser());
 
 import mongoose from "mongoose";
-import { userModel } from "./model/user";
+import { userModel } from "./model/user.js";
 mongoose
     .connect(process.env.MONGODB_URI, {
         dbName: process.env.MONGODB_DB_NAME, // 환경변수 적용
@@ -171,6 +171,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
+//글 작성
 app.post("/postWrite", upload.single("files"), async (req, res) => {
     console.log("폼 데이터:", req.body); // title, summary, content
     console.log("파일 정보:", req.file); // 업로드된 단수 파일 정보
@@ -188,4 +189,26 @@ app.post("/postWrite", upload.single("files"), async (req, res) => {
             : null,
     };
     res.json({ message: "포스트 글쓰기 성공" });
+});
+
+// 글 목록 조회 API - 페이지네이션 추가
+app.get("/postList", async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 0; //페이지 번호 0부터 시작
+        const limit = parseInt(req.query.limit) || 3; //한 페이지당 게시물 수 (기본값 3)
+        const skip = page * limit; // 건너뛸 게시물 수
+
+        //총 게시물 조회
+        const total = await postModel.countDocuments();
+
+        //페이지네이션 적용하여 게시물 조회
+        const posts = await postModel
+            .find()
+            .sort({ createAt: -1 }) //최신순 정렬
+            .skip(skip)
+            .limit(limit);
+    } catch (error) {
+        console.error("게시물 조회 오류", error);
+        res.status(500).json({ error: "게시물 조회에 실패했습니다" });
+    }
 });
