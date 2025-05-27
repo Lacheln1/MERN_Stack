@@ -2,13 +2,30 @@ import React from "react";
 import css from "./Comments.module.css";
 import { useSelector } from "react-redux";
 import { useState } from "react";
-import { createComment } from "../apis/commentApi";
+import { createComment, getComments } from "../apis/commentApi";
 import { Link } from "react-router-dom";
+import { useEffect } from "react";
 const Comments = ({ postId }) => {
     //username을 prop으로 받아와서 사용 가능하고 store에서도 가져올수도있다
     const userInfo = useSelector((state) => state.user.user);
     const [newComment, setNewComment] = useState("");
     const [isLoading, setIsLoading] = useState(false);
+
+    const [comments, setComments] = useState([]);
+
+    useEffect(() => {
+        const fetchComments = async () => {
+            try {
+                const response = await getComments(postId);
+                console.log("댓글 조회 성공", response);
+                setComments(response);
+            } catch (error) {
+                console.error("댓글 목록 조회 실패", error);
+                alert("댓글 목록 조회에 실패했습니다");
+            }
+        };
+        fetchComments();
+    }, [postId]);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -29,6 +46,10 @@ const Comments = ({ postId }) => {
 
             const response = await createComment(commentData);
             console.log("댓글 등록 성공", response);
+
+            // 새 댓글 추가하고 입력창 초기화
+            setComments((prevComments) => [response, ...prevComments]);
+            setNewComment("");
 
             setIsLoading(false);
         } catch (error) {
