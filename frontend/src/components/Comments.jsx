@@ -79,21 +79,27 @@ const Comments = ({ postId }) => {
             )}
 
             <ul>
-                <li className={css.list}>
-                    <div className={css.commnet}>
-                        <p className={css.author}>username</p>
-                        <p className={css.date}>2025-05-05</p>
-                        <p className={css.text}>
-                            로그인 한 사용자만 댓글을 작성할 수 있습니다. <br />
-                            댓글은 다른 사용자에게 보여지며, 작성자만 댓글을 수정하거나 삭제할 수
-                            있습니다.
-                        </p>
-                    </div>
-                    <div className={css.btns}>
-                        <button>수정</button>
-                        <button>삭제</button>
-                    </div>
-                </li>
+                {comments && comments.length > 0 ? (
+                    comments.map((comment) => (
+                        <li key={comment._id} className={css.list}>
+                            <div className={css.commnet}>
+                                <p className={css.author}>{comment.author}</p>
+                                <p className={css.date}>{formatDate(comment.createdAt)}</p>
+                                <p className={css.text}>{comment.content}</p>
+                            </div>
+                            {userInfo.username === comment.author && (
+                                <div className={css.btns}>
+                                    <button>수정</button>
+                                    <button>삭제</button>
+                                </div>
+                            )}
+                        </li>
+                    ))
+                ) : (
+                    <li className={css.list}>
+                        <p className={css.text}>등록된 댓글이 없습니다. 첫 댓글을 작성해보세요!</p>
+                    </li>
+                )}
             </ul>
         </section>
     );
