@@ -3,6 +3,7 @@ import DefaultLayout from "../common/DefaultLayout";
 import RegisterPage from "../pages/RegisterPage";
 import LoginPage from "../pages/LoginPage";
 import PostListPage from "../pages/PostListPage";
+import PostDetailPage from "../pages/PostDetailPage";
 
 export const router = createBrowserRouter([
     {
@@ -25,6 +26,10 @@ export const router = createBrowserRouter([
             {
                 path: "/card",
                 element: <PostListPage />,
+            },
+            {
+                path: "/detail",
+                element: <PostDetailPage />,
             },
         ],
     },
