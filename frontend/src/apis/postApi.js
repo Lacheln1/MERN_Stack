@@ -26,3 +26,9 @@ export const deletePost = async (postId) => {
     const response = await axios.delete(`${API_URL}/post/${postId}`);
     return response.data;
 };
+
+//글 수정 API
+export const updatePost = async (postId, postData) => {
+    const response = await axios.put(`${API_URL}/post/${postId}`, postData);
+    return response.data;
+};

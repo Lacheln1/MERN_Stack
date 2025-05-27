@@ -4,6 +4,7 @@ import RegisterPage from "../pages/RegisterPage";
 import LoginPage from "../pages/LoginPage";
 import PostListPage from "../pages/PostListPage";
 import PostDetailPage from "../pages/PostDetailPage";
+import EditPost from "../pages/EditPost";
 
 export const router = createBrowserRouter([
     {
@@ -29,7 +30,7 @@ export const router = createBrowserRouter([
             },
             {
                 path: "/detail",
-                element: <PostDetailPage />,
+                element: <EditPost />,
             },
         ],
     },
