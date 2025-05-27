@@ -5,6 +5,7 @@ import LoginPage from "../pages/LoginPage";
 import PostListPage from "../pages/PostListPage";
 import PostDetailPage from "../pages/PostDetailPage";
 import EditPost from "../pages/EditPost";
+import CreatePost from "./../pages/CreatePost";
 
 export const router = createBrowserRouter([
     {
@@ -14,7 +15,7 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <div>블로그 리스트</div>,
+                element: <PostListPage />,
             },
             {
                 path: "/register",
@@ -25,12 +26,12 @@ export const router = createBrowserRouter([
                 element: <LoginPage />,
             },
             {
-                path: "/card",
-                element: <PostListPage />,
+                path: "/createPost",
+                element: <CreatePost />,
             },
             {
-                path: "/detail",
-                element: <EditPost />,
+                path: "/detail/:postId",
+                element: <PostDetailPage />,
             },
         ],
     },

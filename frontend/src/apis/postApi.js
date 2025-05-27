@@ -9,7 +9,7 @@ export const createPost = async (postData) => {
 
 //글 목록 조회 API - 페이지네이션 지원
 export const getPostList = async (page = 0, limit = 3) => {
-    const response = await axios.get(`${API_URL}/postList`, {
+    const response = await axios.get(`${API_URL}/posts`, {
         params: { page, limit },
     });
     return response.data;

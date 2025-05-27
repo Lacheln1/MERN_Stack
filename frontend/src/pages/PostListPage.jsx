@@ -32,40 +32,50 @@ const PostListPage = () => {
         },
         [isLoading, hasMore]
     );
-
     useEffect(() => {
-        const fetchPostList = async () => {
-            try {
-                //페이지가 0보다 크면 로딩
-                if (page > 0) setIsLoading(true);
+        console.log("=== useEffect 실행됨 ===");
+        console.log("현재 page:", page);
+        console.log("현재 isLoading:", isLoading);
+        console.log("현재 hasMore:", hasMore);
 
-                //수정된 페이지 정보 전달
-                const data = await getPostList();
-                console.log("목록 조회 성공:", data);
+        const fetchPostList = async () => {
+            console.log("=== fetchPostList 함수 시작 ===");
+            try {
+                if (page > 0) setIsLoading(true);
+                console.log("API 호출 시작 - page:", page);
+
+                const data = await getPostList(page);
+                console.log("API 응답 데이터:", data);
+
                 setPostList((prev) => (page === 0 ? data.posts : [...prev, ...data.posts]));
                 setHasMore(data.hasMore);
+                console.log("상태 업데이트 완료");
             } catch (error) {
-                console.log("목록 조회 실패", error);
-                setError("글 목록을 불러오는 데 실패했습니다");
+                console.error("목록조회 실패:", error);
+                setError("글 목록을 불러오는데 실패했습니다.");
             } finally {
                 setIsLoading(false);
+                console.log("=== fetchPostList 함수 종료 ===");
             }
         };
-        fetchPostList;
-    }, []);
-
+        fetchPostList();
+    }, [page]);
     return (
-        <main className={css.postListPage}>
-            <h2>글 목록</h2>
+        <main className={css.postlistpage}>
+            <h2>글목록</h2>
             {error && <p className={css.errorMessage}>{error}</p>}
-            {isLoading ? (
+            {isLoading && page === 0 ? (
                 <p>로딩중...</p>
             ) : postList.length === 0 ? (
                 <p className={css.noPostMessage}>첫번째 글의 주인공이 되어주세요</p>
             ) : (
-                <ul className={css.postList}>
-                    {postList.map((post) => (
-                        <li key={post._id}>
+                // ref
+                <ul className={css.postList} ref={listRef}>
+                    {postList.map((post, i) => (
+                        <li
+                            key={post._id}
+                            ref={i === postList.length - 1 ? lastPostElementRef : null}
+                        >
                             <PostCard post={post} />
                         </li>
                     ))}

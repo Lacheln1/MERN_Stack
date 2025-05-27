@@ -32,7 +32,9 @@ mongoose
     .catch((err) => {
         console.log("MongoDB 연결 안됨", err);
     });
-
+app.listen(port, () => {
+    console.log(`서버가 포트 ${port}번에서 실행 중입니다`);
+});
 import bcrypt from "bcryptjs";
 const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
 
@@ -192,7 +194,7 @@ app.post("/postWrite", upload.single("files"), async (req, res) => {
 });
 
 // 글 목록 조회 API - 페이지네이션 추가
-app.get("/postList", async (req, res) => {
+app.get("/posts", async (req, res) => {
     try {
         const page = parseInt(req.query.page) || 0; //페이지 번호 0부터 시작
         const limit = parseInt(req.query.limit) || 3; //한 페이지당 게시물 수 (기본값 3)
