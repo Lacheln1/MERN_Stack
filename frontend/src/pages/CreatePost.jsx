@@ -75,7 +75,7 @@ const CreatePost = () => {
                     id="title"
                     name="title"
                     placeholder="제목을 입력해주세요"
-                    value={value}
+                    value={title}
                     onChange={(e) => setTitle(e.target.value)}
                 />
             </form>

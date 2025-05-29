@@ -4,14 +4,14 @@ dotenv.config();
 
 import express from "express";
 const app = express();
-const port = process.env.PORT || 4000; //환경변수 PORT가 없으면 4000으로 설정
+const port = process.env.PORT || 3000; // 3000으로 변경 (프론트엔드와 맞춤)
 
 import cors from "cors";
 app.use(
     cors({
         origin: process.env.FRONTEND_URL || "http://localhost:5173", //클라이언트 url 명시
         credentials: true, // true로 유지해야 쿠키가 전송된다
-        methods: ["GETS", "POST", "PUT", "DELETE"], // 허용할 HTTP 메서드를 명시할 수 있음
+        methods: ["GET", "POST", "PUT", "DELETE"], // "GETS" → "GET" 수정
         allowedHeaders: ["Content-Type", "Authorization"], // 허용할 헤더를 명시할 수 있음
     })
 );
@@ -32,9 +32,11 @@ mongoose
     .catch((err) => {
         console.log("MongoDB 연결 안됨", err);
     });
+
 app.listen(port, () => {
     console.log(`서버가 포트 ${port}번에서 실행 중입니다`);
 });
+
 import bcrypt from "bcryptjs";
 const saltRounds = parseInt(process.env.BCRYPT_SALT_ROUNDS);
 
@@ -73,7 +75,7 @@ app.post("/register", async (req, res) => {
             userName: savedUser.userName,
         });
     } catch (error) {
-        console.log("에러", err);
+        console.log("에러", error); // err → error 수정
         res.status(500).json({ error: "서버 에러" });
     }
 });
@@ -182,33 +184,56 @@ app.post("/postWrite", upload.single("files"), async (req, res) => {
         title: req.body.title,
         summary: req.body.summary,
         content: req.body.content,
-        file: req.files
+        file: req.file // req.files → req.file 수정
             ? {
-                  originalname: req.files.originalname,
-                  size: req.files.size,
-                  mimetype: req.files.mimetype,
+                  originalname: req.file.originalname, // req.files → req.file
+                  size: req.file.size,
+                  mimetype: req.file.mimetype,
               }
             : null,
     };
     res.json({ message: "포스트 글쓰기 성공" });
 });
 
-// 글 목록 조회 API - 페이지네이션 추가
+// 글 목록 조회 API - 페이지네이션 추가 (수정됨)
 app.get("/posts", async (req, res) => {
     try {
+        console.log("글 목록 조회 API 호출됨");
+        console.log("쿼리 파라미터:", req.query);
+
         const page = parseInt(req.query.page) || 0; //페이지 번호 0부터 시작
         const limit = parseInt(req.query.limit) || 3; //한 페이지당 게시물 수 (기본값 3)
         const skip = page * limit; // 건너뛸 게시물 수
 
         //총 게시물 조회
         const total = await postModel.countDocuments();
+        console.log("총 게시물 수:", total);
 
         //페이지네이션 적용하여 게시물 조회
         const posts = await postModel
             .find()
-            .sort({ createAt: -1 }) //최신순 정렬
+            .sort({ createdAt: -1 }) // createAt → createdAt 수정
             .skip(skip)
             .limit(limit);
+
+        console.log("조회된 게시물:", posts);
+
+        // 다음 페이지가 있는지 확인
+        const hasMore = skip + limit < total;
+
+        // 응답 데이터 구성
+        const responseData = {
+            posts: posts,
+            hasMore: hasMore,
+            totalCount: total,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit),
+        };
+
+        console.log("응답 데이터:", responseData);
+
+        // 응답 보내기 (이 부분이 빠져있었음!)
+        res.json(responseData);
     } catch (error) {
         console.error("게시물 조회 오류", error);
         res.status(500).json({ error: "게시물 조회에 실패했습니다" });
@@ -216,7 +241,8 @@ app.get("/posts", async (req, res) => {
 });
 
 // 글 상세조회 API
-app.get("post/:postId", async (req, res) => {
+app.get("/post/:postId", async (req, res) => {
+    // "post/:postId" → "/post/:postId" (앞에 / 추가)
     try {
         const { postId } = req.params;
         const post = await postModel.findById(postId);
@@ -233,7 +259,7 @@ app.get("post/:postId", async (req, res) => {
 // 글 삭제 API
 app.delete("/post/:postId", async (req, res) => {
     try {
-        const { postId } = useParams;
+        const { postId } = req.params; // useParams → req.params 수정
         const post = await postModel.findByIdAndDelete(postId);
         if (!post) {
             return res.status(404).json({ error: "게시물을 찾을 수 없습니다" });
@@ -289,7 +315,7 @@ app.put("/post/:postId", upload.single("files"), async (req, res) => {
         const updatedPost = await postModel.findByIdAndUpdate(
             postId,
             updateData,
-            { new: ture } //업데이트된 문서 반환
+            { new: true } // ture → true 수정
         );
 
         res.json({
@@ -297,7 +323,7 @@ app.put("/post/:postId", upload.single("files"), async (req, res) => {
             post: updatedPost,
         });
     } catch (error) {
-        console.error("게시물 수정 오류", err);
+        console.error("게시물 수정 오류", error); // err → error 수정
         res.status(500).json({ error: "게시물 수정에 실패했습니다" });
     }
 });
@@ -320,5 +346,21 @@ app.post("/comments", async (req, res) => {
     } catch (error) {
         console.error("댓글 작성 오류:", error);
         res.status(500).json({ error: "댓글 작성에 실패했습니다." });
+    }
+});
+
+// 댓글 삭제 기능
+app.delete("/comments/:commentId", async (req, res) => {
+    const { commentId } = req.params;
+
+    try {
+        const comment = await commentModel.findByIdAndDelete(commentId);
+        if (!comment) {
+            return res.status(404).json({ messgae: "댓글을 찾을 수 없습니다" });
+        }
+        res.json({ messgae: "댓글이 삭제되었습니다" });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "서버 에러" });
     }
 });

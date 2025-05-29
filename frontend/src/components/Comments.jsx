@@ -2,7 +2,7 @@ import React from "react";
 import css from "./Comments.module.css";
 import { useSelector } from "react-redux";
 import { useState } from "react";
-import { createComment, getComments } from "../apis/commentApi";
+import { createComment, deleteComment, getComments } from "../apis/commentApi";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
 const Comments = ({ postId }) => {
@@ -58,6 +58,28 @@ const Comments = ({ postId }) => {
             setIsLoading(false);
         }
     };
+
+    //댓글 삭제 핸들러
+    const handleDelete = async (commentId) => {
+        if (window.confirm("정말 삭제하시겠습니까?")) {
+            try {
+                setIsLoading(true);
+                //댓글 삭제 api 호출
+                const response = await deleteComment(commentId);
+                console.log("댓글 삭제 성공", response);
+
+                //댓글 목록에서 삭제된 댓글 제거
+                setComments((prevComments) =>
+                    prevComments.filter((comment) => comment._id !== commentId)
+                );
+                setIsLoading(false);
+            } catch (error) {
+                console.error("댓글 삭제 실패:", error);
+                alert("댓글 삭제에 실패했습니다");
+                setIsLoading(false);
+            }
+        }
+    };
     return (
         <section className={css.comments}>
             {userInfo.username ? (
@@ -90,7 +112,7 @@ const Comments = ({ postId }) => {
                             {userInfo.username === comment.author && (
                                 <div className={css.btns}>
                                     <button>수정</button>
-                                    <button>삭제</button>
+                                    <button onClick={() => handleDelete(comment._id)}>삭제</button>
                                 </div>
                             )}
                         </li>
