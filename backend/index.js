@@ -249,7 +249,15 @@ app.get("/post/:postId", async (req, res) => {
         if (!post) {
             return res.status(404).json({ error: "게시물을 찾을 수 없습니다" });
         }
-        res.json(post);
+
+        //댓글 수 조회
+        const commentCount = await commentModel.countDocuments({ postId });
+
+        //응답 객체 생성
+        const postWithCommentCount = post.toObject();
+        postWithCommentCount.commentCount = commentCount;
+
+        res.json(postWithCommentCount);
     } catch (error) {
         console.error("게시물 상세 조회 오류:", error);
         res.status(500).json({ error: "게시물 상세 조회에 실패했습니다" });
@@ -362,5 +370,46 @@ app.delete("/comments/:commentId", async (req, res) => {
     } catch (error) {
         console.error(error);
         res.status(500).json({ message: "서버 에러" });
+    }
+});
+
+//comments count 반영
+app.get("/postlist", async (req, res) => {
+    try {
+        const page = parseInt(req.query.page) || 0; //페이지번호 0부터 시작
+        const limit = parseInt(req.query.limit) || 3; //한 페이지당 게시물 수
+        const skip = page * limit; //건너뛸 게시물 수
+
+        //총 게시물 조회
+        const total = await postModel.countDocuments();
+
+        //페이지네이션 적용하여 게시물 조회
+        const posts = await postModel
+            .find()
+            .sort({ createdAt: -1 }) //최신순 정렬
+            .skip(skip)
+            .limit(limit);
+
+        //각 포스트의 댓글 수 조회
+        const postsWithCommentCounts = await Promise.all(
+            posts.map(async (post) => {
+                const commentCount = await commentModel.countDocuments({ postId: post._id });
+                const postObject = post.toObject(); //toObject : 몽구스 document를 일반 js객체로 변환. 객체로 변환하여 자유롭게 수정 가능 commentCount라는 새로운 속성을 추가하기 위해 일반 객체로 변환
+                postObject.commentCount = commentCount;
+                return postObject;
+            })
+        );
+
+        //마지막 페이지 여부 확인
+        const hasMore = total > skip + posts.length;
+
+        res.json({
+            posts: postsWithCommentCounts,
+            hasMore,
+            total,
+        });
+    } catch (error) {
+        console.error("게시물 조회 오류", error);
+        res.status(500).json({ error: "게시물 조회에 실패했습니다" });
     }
 });
