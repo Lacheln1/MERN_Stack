@@ -5,10 +5,14 @@ import { useSelector } from "react-redux";
 import { deletePost, getPostDetail } from "../apis/postApi";
 import { formatDate } from "../utils/features";
 import LikeButton from "../components/LikeButton";
+import Comments from "../components/Comments";
 const PostDetailPage = () => {
     const { postId } = useParams();
     const userName = useSelector((state) => state.user.user.userName);
     const [postInfo, setPostInfo] = useState();
+
+    //댓글 수 상태 관리
+    const [commentCount, setCommentCount] = useState(0);
 
     useEffect(() => {
         const fetchPostDetail = async () => {
@@ -16,12 +20,19 @@ const PostDetailPage = () => {
                 const data = await getPostDetail(postId);
                 console.log(data);
                 setPostInfo(data);
+                //초기 댓글 수 설정(백엔드에서 전달받은 경우)
+                setCommentCount(data.commentCount || 0);
             } catch (error) {
                 console.error("상세정보 조회 실패", error);
             }
         };
         fetchPostDetail();
     }, [postId]);
+
+    //댓글 수를 업데이트 하는 함수
+    const updateCommentCount = (count) => {
+        setCommentCount(count);
+    };
 
     const handleDeletePost = async () => {
         if (window.confirm("정말 삭제하시겠습니까?")) {
@@ -47,7 +58,10 @@ const PostDetailPage = () => {
                 <div className={css.info}>
                     <p className={css.author}>{postInfo?.author}</p>
                     <p className={css.date}>{formatDate(postInfo?.updatedAt)}</p>
-                    <p>{postInfo && <LikeButton postId={postId} likes={postInfo.likes} />}</p>
+                    <p>
+                        {postInfo && <LikeButton postId={postId} likes={postInfo.likes} />}
+                        <span style={{ marginLeft: "10px" }}>💬 {commentCount}</span>
+                    </p>
                 </div>
                 <div className={css.summary}>{postInfo?.summary}</div>
                 {/* quill 에디터로 작성된 html 콘텐츠를 렌더링  */}
@@ -67,7 +81,11 @@ const PostDetailPage = () => {
                 )}
                 <Link to={"/"}>목록으로</Link>
             </section>
-            <section className={css.commentList}>댓글 목록</section>
+            <Comments
+                postId={postId}
+                commentCount={commentCount}
+                onCommentCountChange={updateCommentCount}
+            />
         </main>
     );
 };

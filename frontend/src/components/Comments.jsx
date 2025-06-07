@@ -5,7 +5,7 @@ import { useState } from "react";
 import { createComment, deleteComment, getComments } from "../apis/commentApi";
 import { Link } from "react-router-dom";
 import { useEffect } from "react";
-const Comments = ({ postId }) => {
+const Comments = ({ postId, onCommentCountChange }) => {
     //username을 prop으로 받아와서 사용 가능하고 store에서도 가져올수도있다
     const userInfo = useSelector((state) => state.user.user);
     const [newComment, setNewComment] = useState("");
@@ -17,6 +17,10 @@ const Comments = ({ postId }) => {
         try {
             const response = await getComments(postId);
             setComments(response);
+            //댓글 수를 부모 컴포넌트에 전달
+            if (onCommentCountChange) {
+                onCommentCountChange(response.length);
+            }
         } catch (error) {
             console.error("댓글 목록 조회 실패:", error);
             alert("댓글 목록 조회에 실패했습니다.");
@@ -43,8 +47,14 @@ const Comments = ({ postId }) => {
             };
 
             const response = await createComment(commentData);
-            setComments((prevComments) => [response, ...prevComments]);
+            const updatedComments = [response, ...comments];
+            setComments(updatedComments);
             setNewComment("");
+
+            //댓글이 추가되면 댓글 수 업데이트
+            if (onCommentCountChange) {
+                onCommentCountChange(updatedComments.length);
+            }
         } catch (error) {
             console.error("댓글 등록 실패:", error);
             alert("댓글 등록에 실패했습니다.");
@@ -59,9 +69,13 @@ const Comments = ({ postId }) => {
         try {
             setIsLoading(true);
             await deleteComment(commentId);
-            setComments((prevComments) =>
-                prevComments.filter((comment) => comment._id !== commentId)
-            );
+            const updatedComments = comments.filter((comment) => comment._id !== commentId);
+            setComments(updatedComments);
+
+            //댓글이 삭제되면 댓글 수 업데이트
+            if (onCommentCountChange) {
+                onCommentCountChange(updatedComments.length);
+            }
         } catch (error) {
             console.error("댓글 삭제 실패:", error);
             alert("댓글 삭제에 실패했습니다.");
