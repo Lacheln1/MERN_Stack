@@ -415,20 +415,37 @@ app.get("/postlist", async (req, res) => {
 });
 
 //사용자 정보 조회 api
-app.get("/user/:username", async (req, res) => {
+app.get("/user/:userName", async (req, res) => {
+    try {
+        const { userName } = req.params;
+        const user = await userModel.findOne({ userName }, { password: 0 });
+
+        if (!user) {
+            return res.status(404).json({ error: "사용자를 찾을 수 없습니다." });
+        }
+
+        res.json(user);
+    } catch (err) {
+        console.error("사용자 정보 조회 오류:", err);
+        res.status(500).json({ error: "사용자 정보 조회에 실패했습니다." });
+    }
+});
+
+// 사용자가 작성한 글 조회 API
+app.get("/user/:userName/posts", async (req, res) => {
     try {
         const { userName } = req.params;
         const posts = await postModel.find({ author: userName }).sort({ createdAt: -1 });
 
         res.json(posts);
-    } catch (error) {
-        console.error("사용자 게시물 조회 오류:", error);
-        res.status(500).json({ error: "사용자 게시물 조회에 실패했습니다" });
+    } catch (err) {
+        console.error("사용자 게시물 조회 오류:", err);
+        res.status(500).json({ error: "사용자 게시물 조회에 실패했습니다." });
     }
 });
 
 //사용자가 작성한 댓글 조회 api
-app.get("/user/:username/comments", async (req, res) => {
+app.get("/user/:userName/comments", async (req, res) => {
     try {
         const { userName } = req.params;
         const comments = await commentModel.find({ author: userName }).sort({ createdAt: -1 });
@@ -441,7 +458,7 @@ app.get("/user/:username/comments", async (req, res) => {
 });
 
 //사용자가 좋아요 클릭한 글 조회 api
-app.get("/user/:username/likes", async (req, res) => {
+app.get("/user/:userName/likes", async (req, res) => {
     try {
         const { userName } = req.params;
         //먼저 사용자 id찾기

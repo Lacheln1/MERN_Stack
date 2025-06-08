@@ -88,7 +88,7 @@ const Header = () => {
                         <>
                             <MenuLike to="/createPost" label="글쓰기" closeMenu={closeMenu} />
                             <MenuLike
-                                to="/mypage"
+                                to={`/mypage/${userName}`}
                                 label={`마이페이지(${userName})`}
                                 closeMenu={closeMenu}
                             />

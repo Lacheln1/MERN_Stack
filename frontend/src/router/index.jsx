@@ -16,7 +16,7 @@ export const router = createBrowserRouter([
         children: [
             {
                 index: true,
-                element: <UserPage />,
+                element: <PostListPage />,
             },
             {
                 path: "/register",
@@ -33,6 +33,10 @@ export const router = createBrowserRouter([
             {
                 path: "/detail/:postId",
                 element: <PostDetailPage />,
+            },
+            {
+                path: "/mypage/:userName",
+                element: <UserPage />,
             },
         ],
     },
