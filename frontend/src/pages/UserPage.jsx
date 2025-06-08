@@ -11,7 +11,7 @@ export const UserPage = () => {
                     <p>패스워드</p>
                     <div>
                         <p>로그인 사용자와 userpage/:username 같으면 개인정보 수정 버튼 활성화</p>
-                        <button>내 정보 수정</button>
+                        <button className={css.editButton}>내 정보 수정</button>
                     </div>
                 </div>
             </section>
